@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS Tienda_Tecnologia.clientes(
  CREATE TABLE IF NOT EXISTS Tienda_Tecnologia.productos(
 	id_producto int PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	nombre_producto VARCHAR(60) NOT NULL,
+    sistema_operativo  VARCHAR(100) NOT NULL,
     id_proveedor int NOT NULL,
     precio_venta int NOT NULL,
     precio_compra int NOT NULL,
