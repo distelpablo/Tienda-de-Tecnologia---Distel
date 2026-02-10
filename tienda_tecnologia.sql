@@ -79,5 +79,3 @@ ADD FOREIGN KEY (id_venta) REFERENCES tienda_tecnologia.ventas(id_venta);
 ALTER TABLE  Tienda_Tecnologia.productos
 ADD FOREIGN KEY (id_proveedor) REFERENCES tienda_tecnologia.proveedores(id_proveedor);
 
-
--- DROP DATABASE tienda_tecnologia;
