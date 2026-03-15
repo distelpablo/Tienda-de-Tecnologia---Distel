@@ -78,7 +78,7 @@ ADD FOREIGN KEY (id_venta) REFERENCES tienda_tecnologia.ventas(id_venta);
 ALTER TABLE  Tienda_Tecnologia.productos
 ADD FOREIGN KEY (id_proveedor) REFERENCES tienda_tecnologia.proveedores(id_proveedor);
 
-<<<<<<< HEAD
+
 
 -- Inserción de registros 
 
@@ -175,8 +175,8 @@ INSERT INTO tienda_tecnologia.venta_clientes(id_cliente,id_producto,id_venta) VA
 -- DROP DATABASE tienda_tecnologia;
 
 CREATE VIEW tienda_tecnologia.view_venta_completa AS
-	SELECT venta.id_venta AS id_venta, CONCAT(vendedor.nombre,' ',vendedor.apellido) AS nombre_vendedor,
-	CONCAT(cliente.nombre,' ',cliente.apellido) AS nombre_cliente,
+	SELECT venta.id_venta AS id_venta, fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
+	 fn_nombre_completo(cliente.nombre,cliente.apellido) AS nombre_cliente,
     producto.nombre_producto AS nombre_producto,venta.fecha_venta AS fecha
     FROM tienda_tecnologia.ventas AS venta
         JOIN tienda_tecnologia.vendedores AS vendedor USING (id_vendedor)
@@ -191,12 +191,14 @@ CREATE VIEW tienda_tecnologia.view_venta_completa AS
   
   CREATE VIEW tienda_tecnologia.view_vendedores AS 
 	SELECT vendedor.id_vendedor AS id_vendedor,
-    CONCAT(vendedor.nombre,' ',vendedor.apellido) AS nombre_vendedor,
+    fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
     SUM(producto.precio_venta) AS ganacias_total 
     FROM tienda_tecnologia.vendedores AS vendedor 
 		JOIN tienda_tecnologia.ventas AS v USING(id_vendedor) 
         JOIN tienda_tecnologia.productos AS producto USING (id_producto) GROUP BY  vendedor.id_vendedor;
-        
+
+-- Esta vista muestra la ganacia total generada por cada vendedor 
+
 CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
     SELECT proveedor.id_proveedor AS id,
 	proveedor.nombre_comercial AS nombre_comercial,
@@ -207,4 +209,44 @@ CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
     GROUP BY proveedor.id_proveedor
     ORDER BY cantidad_ventas DESC;
 
+-- Esta vista muestra cuantas ventas hizo cada proveedor en la tienda, ordenados de mayor a menor.
 
+-- Creación de funciones 
+
+DELIMITER // 
+
+CREATE FUNCTION tienda_tecnologia.fn_ganacia_total (_stock INT, _precio_compra DECIMAL(12,2), _precio_venta DECIMAL(12,2)) 
+RETURNS DECIMAL(12,2) 
+DETERMINISTIC
+BEGIN 
+	DECLARE resultado DECIMAL(12,2);
+    SET resultado = (_precio_venta - _precio_compra) * _stock; 
+    RETURN resultado;
+END;//
+
+-- Esta funcion devuelve la ganacia total que generaria un producto al vender todo su stock.
+DELIMITER // 
+
+CREATE FUNCTION tienda_tecnologia.fn_nombre_completo (_nombre VARCHAR(60), _apellido VARCHAR(60) ) 
+RETURNS VARCHAR(120)
+DETERMINISTIC
+BEGIN 
+	DECLARE resultado VARCHAR(120);
+    SET resultado =CONCAT(_nombre,' ',_apellido); 
+    RETURN resultado;
+END;//
+-- Esta funcion pide un nombre y un apellido y devuelve el nombre completo en un VARCHAR.
+
+DELIMITER // 
+CREATE FUNCTION tienda_tecnologia.precio_por_stock (_stock INT, _ganancia_total DECIMAL(12,2)) 
+RETURNS DECIMAL(12,2) 
+DETERMINISTIC
+BEGIN 
+	DECLARE resultado DECIMAL(12,2);
+    SET resultado = _ganancia_total / _stock ; 
+    RETURN resultado;
+END;//
+
+
+/*Esta funcion pide una cantidad de stock de un producto y la ganancia total esperada para ese producto, 
+y devuelve el precio de venta que deberia tener para alcanzarlo*/
