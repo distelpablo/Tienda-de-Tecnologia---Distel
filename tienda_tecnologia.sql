@@ -209,6 +209,7 @@ CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
     GROUP BY proveedor.id_proveedor
     ORDER BY cantidad_ventas DESC;
 
+SELECT * FROM tienda_tecnologia.clientes AS c WHERE c.nombre = "pepe"; 
 -- Esta vista muestra cuantas ventas hizo cada proveedor en la tienda, ordenados de mayor a menor.
 
 -- Creación de funciones 
@@ -247,6 +248,39 @@ BEGIN
     RETURN resultado;
 END;//
 
-
 /*Esta funcion pide una cantidad de stock de un producto y la ganancia total esperada para ese producto, 
 y devuelve el precio de venta que deberia tener para alcanzarlo*/
+
+-- Creacion de procediimentos 
+
+DELIMITER // 
+
+CREATE PROCEDURE  tienda_tecnologia.sp_agregar_producto 
+	(IN _nombre_producto VARCHAR(60), IN _proveedor VARCHAR(60), 
+	IN _precio_venta DECIMAL(12,2),IN _precio_compra DECIMAL(12,2), IN _stock INT) 
+BEGIN 
+	DECLARE idproveedor INT;
+    IF EXISTS (SELECT p.id_proveedor FROM tienda_tecnologia.proveedores AS p WHERE p.nombre_comercial = _proveedor) THEN 
+		SET idproveedor = (SELECT p.id_proveedor FROM tienda_tecnologia.proveedores AS p WHERE p.nombre_comercial = _proveedor); 
+		INSERT INTO tienda_tecnologia.productos (nombre_producto, id_proveedor, precio_venta, precio_compra, stock) VALUE 
+			(_nombre_producto, idproveedor,_precio_venta,_precio_compra,_stock);
+    ELSE 
+		SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'no existe el proveedor';
+	END IF;
+
+END;//
+
+-- Este procedimiento agrega un producto a la tabla de producto dada su informacion. 
+DELIMITER //
+
+CREATE PROCEDURE  tienda_tecnologia.sp_despido
+	(IN _nombre_vendedor VARCHAR(120))
+BEGIN 
+	
+    DELETE FROM tienda_tecnologia.vendedores AS v WHERE fn_nombre_completo(v.nombre,v.apellido) = _nombre_vendedor;
+END;//
+
+-- Este procedimiento elimina el registro de un vendedor dado su nombre completo.
+
+
