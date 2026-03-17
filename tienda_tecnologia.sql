@@ -305,10 +305,10 @@ BEGIN
 END; //
 
 /*Este trigger hace que despues de que se agregue un registro a la tabla ventas se reste en 1 el stock del producto y 
-se sume la venta al cantidad de vetnas de la sucursal*/
+se sume la venta al cantidad de ventas de la sucursal*/
 
 
-CREATE TRIGGER tienda_tecnologia.descuento 
+CREATE TRIGGER tienda_tecnologia.tr_descuento 
 AFTER UPDATE ON tienda_tecnologia.productos 
 FOR EACH ROW 
 BEGIN 
