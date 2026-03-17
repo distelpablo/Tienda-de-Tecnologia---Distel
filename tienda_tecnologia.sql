@@ -106,7 +106,6 @@ INSERT INTO tienda_tecnologia.vendedores (nombre,apellido, email,id_sucursal) VA
 ("Mateo","Pedernera","mpedernera_arg@yahoo.com",10),
 ("Sofia", "Villalba","sofivillalba.arq@gmail.com",2);
 
--- SELECT * FROM tienda_tecnologia.sucursales;
 
 INSERT INTO tienda_tecnologia.proveedores (nombre_comercial,email_contacto) VALUES
 ("Air Computers","ventas@air-computers.com"),
@@ -133,7 +132,6 @@ INSERT INTO tienda_tecnologia.clientes (nombre,apellido,email) VALUES
 ("Bruno", "Di Paolo","bruno.dipaolo@gmail.com"),
 ("Abril","Mansilla","abril.mansilla.ok@gmail.com");
 
--- SELECT * FROM tienda_tecnologia.proveedores;
 
 INSERT INTO tienda_tecnologia.productos (nombre_producto, id_proveedor,precio_venta, precio_compra,stock ) VALUES
 ("Monitor LED 24 CX",1,105.00, 139.00,15),
@@ -150,12 +148,16 @@ INSERT INTO tienda_tecnologia.productos (nombre_producto, id_proveedor,precio_ve
 INSERT INTO tienda_tecnologia.ventas (id_vendedor,id_producto,fecha_venta) VALUES
 (2,8,'2025-01-15'),
 (3,5,'2025-03-22'),
+(4,5,'2025-04-20'),
 (1,9,'2025-05-02'),
 (7,7,'2025-06-18'),
 (10,10,'2025-07-09'),
+(6,5,'2025-08-12'),
 (8,1,'2025-08-30'),
+(4,5,'2025-09-01'),
 (6,2,'2025-09-12'),
 (4,3,'2025-10-25'),
+(9,10,'2025-11-02'),
 (9,6,'2025-11-14'),
 (5,4,'2025-12-01');
 
@@ -169,48 +171,12 @@ INSERT INTO tienda_tecnologia.venta_clientes(id_cliente,id_producto,id_venta) VA
 (7,3,2),
 (8,10,5),
 (9,6,10),
-(10,9,8);
+(10,9,8),
+(2,3,11),
+(4,10,12),
+(7,6,13),
+(10,4,14);
 
-
--- DROP DATABASE tienda_tecnologia;
-
-CREATE VIEW tienda_tecnologia.view_venta_completa AS
-	SELECT venta.id_venta AS id_venta, fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
-	 fn_nombre_completo(cliente.nombre,cliente.apellido) AS nombre_cliente,
-    producto.nombre_producto AS nombre_producto,venta.fecha_venta AS fecha
-    FROM tienda_tecnologia.ventas AS venta
-        JOIN tienda_tecnologia.vendedores AS vendedor USING (id_vendedor)
-        JOIN tienda_tecnologia.venta_clientes AS vc USING (id_venta)
-        JOIN tienda_tecnologia.clientes AS cliente USING (id_cliente)
-        JOIN tienda_tecnologia.productos  AS producto ON producto.id_producto = venta.id_producto
-    ORDER BY venta.id_venta;
-    
-    -- Esta vista muestra todas las entidades involucradas en cada venta.
-    
-  --  SELECT * FROM tienda_tecnologia.view_venta_completa;
-  
-  CREATE VIEW tienda_tecnologia.view_vendedores AS 
-	SELECT vendedor.id_vendedor AS id_vendedor,
-    fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
-    SUM(producto.precio_venta) AS ganacias_total 
-    FROM tienda_tecnologia.vendedores AS vendedor 
-		JOIN tienda_tecnologia.ventas AS v USING(id_vendedor) 
-        JOIN tienda_tecnologia.productos AS producto USING (id_producto) GROUP BY  vendedor.id_vendedor;
-
--- Esta vista muestra la ganacia total generada por cada vendedor 
-
-CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
-    SELECT proveedor.id_proveedor AS id,
-	proveedor.nombre_comercial AS nombre_comercial,
-	COUNT(vc.id_venta) AS cantidad_ventas
-    FROM tienda_tecnologia.proveedores AS  proveedor
-        JOIN tienda_tecnologia.productos AS producto USING (id_proveedor)
-        JOIN tienda_tecnologia.venta_clientes AS vc USING (id_producto)
-    GROUP BY proveedor.id_proveedor
-    ORDER BY cantidad_ventas DESC;
-
-SELECT * FROM tienda_tecnologia.clientes AS c WHERE c.nombre = "pepe"; 
--- Esta vista muestra cuantas ventas hizo cada proveedor en la tienda, ordenados de mayor a menor.
 
 -- Creación de funciones 
 
@@ -226,7 +192,6 @@ BEGIN
 END;//
 
 -- Esta funcion devuelve la ganacia total que generaria un producto al vender todo su stock.
-DELIMITER // 
 
 CREATE FUNCTION tienda_tecnologia.fn_nombre_completo (_nombre VARCHAR(60), _apellido VARCHAR(60) ) 
 RETURNS VARCHAR(120)
@@ -237,8 +202,7 @@ BEGIN
     RETURN resultado;
 END;//
 -- Esta funcion pide un nombre y un apellido y devuelve el nombre completo en un VARCHAR.
-
-DELIMITER // 
+ 
 CREATE FUNCTION tienda_tecnologia.precio_por_stock (_stock INT, _ganancia_total DECIMAL(12,2)) 
 RETURNS DECIMAL(12,2) 
 DETERMINISTIC
@@ -251,7 +215,47 @@ END;//
 /*Esta funcion pide una cantidad de stock de un producto y la ganancia total esperada para ese producto, 
 y devuelve el precio de venta que deberia tener para alcanzarlo*/
 
--- Creacion de procediimentos 
+DELIMITER ; 
+
+-- Creacion de vistas
+
+CREATE VIEW tienda_tecnologia.view_venta_completa AS
+	SELECT venta.id_venta AS id_venta, fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
+	 fn_nombre_completo(cliente.nombre,cliente.apellido) AS nombre_cliente,
+    producto.nombre_producto AS nombre_producto,venta.fecha_venta AS fecha
+    FROM tienda_tecnologia.ventas AS venta
+        JOIN tienda_tecnologia.vendedores AS vendedor USING (id_vendedor)
+        JOIN tienda_tecnologia.venta_clientes AS vc USING (id_venta)
+        JOIN tienda_tecnologia.clientes AS cliente USING (id_cliente)
+        JOIN tienda_tecnologia.productos  AS producto ON producto.id_producto = venta.id_producto
+    ORDER BY venta.id_venta;
+    
+    -- Esta vista muestra todas las entidades involucradas en cada venta.
+    
+  
+  CREATE VIEW tienda_tecnologia.view_vendedores AS 
+	SELECT vendedor.id_vendedor AS id_vendedor,
+    fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
+    SUM(producto.precio_venta) AS ganacias_total 
+    FROM tienda_tecnologia.vendedores AS vendedor 
+		JOIN tienda_tecnologia.ventas AS v USING(id_vendedor) 
+        JOIN tienda_tecnologia.productos AS producto USING (id_producto) GROUP BY  vendedor.id_vendedor;
+
+-- Esta vista muestra la ganacia total generada por cada vendedor. 
+
+CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
+    SELECT proveedor.id_proveedor AS id,
+	proveedor.nombre_comercial AS nombre_comercial,
+	COUNT(vc.id_venta) AS cantidad_ventas
+    FROM tienda_tecnologia.proveedores AS  proveedor
+        JOIN tienda_tecnologia.productos AS producto USING (id_proveedor)
+        JOIN tienda_tecnologia.venta_clientes AS vc USING (id_producto)
+    GROUP BY proveedor.id_proveedor
+    ORDER BY cantidad_ventas DESC;
+ 
+-- Esta vista muestra cuantas ventas hizo cada proveedor en la tienda, ordenados de mayor a menor.
+
+-- Creacion de procedimientos.
 
 DELIMITER // 
 
@@ -272,7 +276,6 @@ BEGIN
 END;//
 
 -- Este procedimiento agrega un producto a la tabla de producto dada su informacion. 
-DELIMITER //
 
 CREATE PROCEDURE  tienda_tecnologia.sp_despido
 	(IN _nombre_vendedor VARCHAR(120))
@@ -283,4 +286,35 @@ END;//
 
 -- Este procedimiento elimina el registro de un vendedor dado su nombre completo.
 
+-- Creacion de triggers
 
+
+CREATE TRIGGER tienda_tecnologia.tr_agrega_venta 
+AFTER INSERT ON tienda_tecnologia.ventas 
+FOR EACH ROW
+BEGIN 
+    DECLARE precioventa DECIMAL(12,2);
+    DECLARE preciocompra DECIMAL(12,2);
+    DECLARE idsucursal INT;
+    
+    SET idsucursal = (SELECT v.id_sucursal FROM tienda_tecnologia.vendedores AS v WHERE v.id_vendedor= NEW.id_vendedor); 
+    
+    UPDATE tienda_tecnologia.productos AS p SET p.stock= p.stock -1 WHERE p.id_producto = NEW.id_producto;
+    UPDATE tienda_tecnologia.sucursales AS s SET s.ventas_totales = s.ventas_totales + 1;
+
+END; //
+
+/*Este trigger hace que despues de que se agregue un registro a la tabla ventas se reste en 1 el stock del producto y 
+se sume la venta al cantidad de vetnas de la sucursal*/
+
+
+CREATE TRIGGER tienda_tecnologia.descuento 
+AFTER UPDATE ON tienda_tecnologia.productos 
+FOR EACH ROW 
+BEGIN 
+	IF NEW.stock > 55 THEN 
+		UPDATE tienda_tecnologia.productos AS p SET p.precio_venta = p.precio_venta * 0.80 WHERE p.id_producto = NEW.id_producto; 
+    END IF;
+END; //
+
+-- Este Trigger hace que la hora de actualizar el registro de un producto, si su stock es mayor a 55 entonces que se venda por un precio menor.
