@@ -191,7 +191,7 @@ BEGIN
     RETURN resultado;
 END;//
 
--- Esta funcion devuelve la ganacia total que generaria un producto al vender todo su stock.
+-- Esta función devuelve la ganacia total que generaria un producto al vender todo su stock.
 
 CREATE FUNCTION tienda_tecnologia.fn_nombre_completo (_nombre VARCHAR(60), _apellido VARCHAR(60) ) 
 RETURNS VARCHAR(120)
@@ -201,7 +201,7 @@ BEGIN
     SET resultado =CONCAT(_nombre,' ',_apellido); 
     RETURN resultado;
 END;//
--- Esta funcion pide un nombre y un apellido y devuelve el nombre completo en un VARCHAR.
+-- Esta función pide un nombre y un apellido y devuelve el nombre completo en un VARCHAR.
  
 CREATE FUNCTION tienda_tecnologia.precio_por_stock (_stock INT, _ganancia_total DECIMAL(12,2)) 
 RETURNS DECIMAL(12,2) 
@@ -212,12 +212,12 @@ BEGIN
     RETURN resultado;
 END;//
 
-/*Esta funcion pide una cantidad de stock de un producto y la ganancia total esperada para ese producto, 
+/*Esta función pide una cantidad de stock de un producto y la ganancia total esperada para ese producto, 
 y devuelve el precio de venta que deberia tener para alcanzarlo*/
 
 DELIMITER ; 
 
--- Creacion de vistas
+-- Creación de vistas
 
 CREATE VIEW tienda_tecnologia.view_venta_completa AS
 	SELECT venta.id_venta AS id_venta, fn_nombre_completo(vendedor.nombre,vendedor.apellido) AS nombre_vendedor,
@@ -255,7 +255,7 @@ CREATE VIEW tienda_tecnologia.view_proveedor_popular AS
  
 -- Esta vista muestra cuantas ventas hizo cada proveedor en la tienda, ordenados de mayor a menor.
 
--- Creacion de procedimientos.
+-- Creación de procedimientos
 
 DELIMITER // 
 
@@ -275,7 +275,7 @@ BEGIN
 
 END;//
 
--- Este procedimiento agrega un producto a la tabla de producto dada su informacion. 
+-- Este procedimiento agrega un producto a la tabla de producto dada su información. 
 
 CREATE PROCEDURE  tienda_tecnologia.sp_despido
 	(IN _nombre_vendedor VARCHAR(120))
@@ -286,7 +286,7 @@ END;//
 
 -- Este procedimiento elimina el registro de un vendedor dado su nombre completo.
 
--- Creacion de triggers
+-- Creación de triggers
 
 
 CREATE TRIGGER tienda_tecnologia.tr_agrega_venta 
@@ -317,4 +317,5 @@ BEGIN
     END IF;
 END; //
 
--- Este Trigger hace que la hora de actualizar el registro de un producto, si su stock es mayor a 55 entonces que se venda por un precio menor.
+-- Este Trigger hace que a la hora de actualizar el registro de un producto, si su stock es mayor a 55 entonces que se venda por un precio menor.
+
