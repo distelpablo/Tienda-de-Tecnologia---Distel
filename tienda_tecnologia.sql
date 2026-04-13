@@ -319,3 +319,4 @@ END; //
 
 -- Este Trigger hace que a la hora de actualizar el registro de un producto, si su stock es mayor a 55 entonces que se venda por un precio menor.
 
+
